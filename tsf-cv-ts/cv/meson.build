@@ -1,6 +1,6 @@
 # Copyright (C) 2026 Interpretica Unipessoal Lda
-tests = [ 'prologue', 'epilogue', 'info', 'compare', 'match', 'region',
-          'ocr', 'decode' ]
+tests = [ 'prologue', 'epilogue', 'info', 'formats', 'compare', 'match',
+          'region', 'ocr', 'decode', 'barcode', 'screenshot', 'robustness' ]
 foreach test : tests
     test_exe = test
     test_c = test + '.c'

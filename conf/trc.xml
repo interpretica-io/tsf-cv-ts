@@ -25,6 +25,11 @@
             <notes />
             <iter result="PASSED"><notes /></iter>
           </test>
+          <test name="formats" type="script">
+            <objective>Container and depth across JPEG, BMP, TIFF, grey and 16-bit</objective>
+            <notes />
+            <iter result="PASSED"><notes /></iter>
+          </test>
           <test name="compare" type="script">
             <objective>Pixel diff: identical images and a boxed change</objective>
             <notes />
@@ -48,13 +53,39 @@
             </iter>
           </test>
           <test name="decode" type="script">
-            <objective>Decoding a known QR payload</objective>
+            <objective>Decoding QR: one symbol and two in one image</objective>
             <notes />
-            <iter result="SKIPPED">
-              <notes>QR decoding needs OpenCV built with QUIRC; the Debian
-                     bookworm libopencv used here is not, so the agent
-                     reports no QR backend and the test skips. On an
-                     OpenCV with QUIRC this iteration PASSES.</notes>
+            <iter result="PASSED">
+              <notes>The agent's OpenCV is built from source with QUIRC, so
+                     QR decoding works, including two symbols in one image
+                     via the multi detector.</notes>
+            </iter>
+          </test>
+          <test name="barcode" type="script">
+            <objective>Decoding EAN-13: OpenCV's own reference photos as the control</objective>
+            <notes />
+            <iter result="PASSED">
+              <notes>Decodes OpenCV's own reference EAN-13 photos
+                     (opencv_extra testdata/cv/barcode/single:
+                     bottle_1=6922255451427, bottle_2=6921168509256,
+                     book=9787115279460) and requires each present one to
+                     decode to its documented value. The suite's synthetic
+                     python-barcode EAN-13 is decoded alongside as a
+                     non-fatal diagnostic (charted, logged).</notes>
+            </iter>
+          </test>
+          <test name="screenshot" type="script">
+            <objective>End-to-end: match, region, OCR and QR on one realistic screenshot</objective>
+            <notes />
+            <iter result="PASSED"><notes /></iter>
+          </test>
+          <test name="robustness" type="script">
+            <objective>Malformed-input crash-safety and metamorphic invariants</objective>
+            <notes />
+            <iter result="PASSED">
+              <notes>A FAILED here is a real finding (a crash on a malformed
+                     input or a violated invariant), to be triaged into
+                     this entry with its verdict before it is fixed.</notes>
             </iter>
           </test>
           <test name="epilogue" type="script">

@@ -56,18 +56,54 @@ first build, since tsf-cv is not published yet). The Builder clones
 tsf-cv itself, so the checkout beside this suite is not what a run
 compiles.
 
+## Tests
+
+| Test | What it checks |
+|---|---|
+| `info` | the scene is exactly 320×240, 3-channel, 8-bit PNG |
+| `formats` | container and depth across JPEG, BMP, TIFF, an 8-bit 1-channel PNG and a 16-bit 3-channel PNG |
+| `compare` | identical copies (0 changed, SSIM 1); the diff variant boxed where it changed; the heatmap read back as a real scene-sized image |
+| `match` | the red block found at its pixel, an absent template not found, and the same template found at both places it appears |
+| `region` | the green indicator ~100 % inside a green HSV range, the red block ~0 % |
+| `ocr` | the rendered caption recovered whole and from a sub-rectangle (skips without tesseract) |
+| `decode` | one QR symbol, and two QR symbols in one image, decoded back |
+| `barcode` | OpenCV's own reference EAN-13 photos decode to their known values (the control); the synthetic one is a non-fatal diagnostic |
+| `screenshot` | end-to-end on one realistic app screenshot: size, button match, green indicator, OCR'd status line, decoded QR |
+| `robustness` | malformed/edge inputs do not crash the agent's OpenCV, and metamorphic invariants (compare symmetry, QR encode→decode round-trip) hold |
+
 ## Status
 
-**Built and green in Docker** (`./scripts/run.sh docker guess
---cfg=localhost`) against OpenCV 4.6.0 on Debian bookworm: `info`,
-`compare`, `match`, `region` and `ocr` pass against the real libraries,
-and `decode` skips because that OpenCV build has no QUIRC, so QR
-decoding is unavailable (the agent reports no QR backend). The run
-finishes `PASSED`; `conf/trc.xml` records the `decode` skip as expected.
-On an OpenCV built with QUIRC the `decode` iteration passes too.
+**Built and run in Docker** (`./scripts/run.sh docker guess
+--cfg=localhost`) against an **OpenCV 4.14.0 built from source with
+QUIRC** and the barcode module (the suite's Dockerfile builds it; Debian's
+stock libopencv lacks QUIRC and is too old for the barcode module), plus
+libtesseract. **All fourteen iterations pass live** against the real
+libraries — including QR decoding (one and two symbols), OCR whole and by
+region, format/depth sniffing, the diff heatmap, a multi-location template
+match, the realistic end-to-end screenshot, the robustness group, and the
+barcode control. The run is green against expectations
+(`Passed, as expected: 14`, no unexpected results).
 
-To rebuild here before tsf-cv is published, point `conf/external.yml`'s
-`url` at a local checkout of tsf-cv (an absolute path git can clone)
-and pin its commit in `conf/builder.conf.lock`; the Docker run mounts
-the parent directory, so a sibling `../tsf-cv` is visible inside the
-container.
+## Notes on two tests
+
+- **`barcode`** asserts against OpenCV's own reference EAN-13 photos
+  (`opencv_extra` `testdata/cv/barcode/single`), which decode to known
+  values; a synthetic `python-barcode` symbol is decoded alongside as a
+  non-fatal diagnostic, since crisp vector bars on flat white are not what
+  `cv::barcode`'s localisation is tuned for.
+- **`match`** uses `TM_SQDIFF` for a solid-colour template: the normalised
+  methods (`TM_CCOEFF_NORMED` / `TM_CCORR_NORMED`) divide by the template's
+  standard deviation, which is zero for a uniform template, so they are not
+  usable there.
+
+## Rebuilding here
+
+`conf/external.yml`'s `url` points at the local tsf-cv checkout, because
+the Docker build container has no git credentials for the private github
+repository; the run mounts the parent directory, so the sibling checkout
+is visible inside the container. On CI or a host with credentials, switch
+`url` back to the github URL and `ref: main`. A run rewrites
+`conf/builder.conf.lock` pinning the resolved commit; reset it to
+header-only (`grep '^#' conf/builder.conf.lock > x && mv x
+conf/builder.conf.lock`) and clear `/tmp/aibuild /tmp/te_ws_*` to pick up
+a new module commit.

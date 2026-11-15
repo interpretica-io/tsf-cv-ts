@@ -6,10 +6,14 @@
         <prologue><script name="prologue"><objective>Prepare the CV group.</objective></script></prologue>
         <epilogue><script name="epilogue"><objective>Finalize the CV group.</objective></script></epilogue>
         <run><script name="info"><objective>Image dimensions and encoding.</objective></script></run>
-        <run><script name="compare"><objective>Pixel diff: identical images and a boxed change.</objective></script></run>
-        <run><script name="match"><objective>Finding a template, and not finding an absent one.</objective></script></run>
+        <run><script name="formats"><objective>Container and depth across JPEG, BMP, TIFF, grey and 16-bit.</objective></script></run>
+        <run><script name="compare"><objective>Pixel diff: identical images, a boxed change and a heatmap.</objective></script></run>
+        <run><script name="match"><objective>Finding a template, an absent one, and one that appears twice.</objective></script></run>
         <run><script name="region"><objective>Region colour: the green indicator.</objective></script></run>
-        <run><script name="ocr"><objective>Recognising rendered text (skips without tesseract).</objective></script></run>
-        <run><script name="decode"><objective>Decoding a known QR payload.</objective></script></run>
+        <run><script name="ocr"><objective>Recognising rendered text, whole image and a region (skips without tesseract).</objective></script></run>
+        <run><script name="decode"><objective>Decoding QR: one symbol and two in one image.</objective></script></run>
+        <run><script name="barcode"><objective>Decoding EAN-13 1-D barcodes: OpenCV reference photos as the control, plus a synthetic diagnostic.</objective></script></run>
+        <run><script name="screenshot"><objective>End-to-end: match, region, OCR and QR on one realistic screenshot.</objective></script></run>
+        <run><script name="robustness"><objective>Malformed-input crash-safety and metamorphic invariants.</objective></script></run>
     </session>
 </package>

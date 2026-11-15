@@ -60,6 +60,68 @@ extern "C" {
 /** The payload encoded in qr.png (absent if the agent cannot encode QR). */
 #define TSAPI_CV_QR_TEXT    "tsf-cv:ok"
 
+/** The two payloads encoded side by side in qr2.png. */
+#define TSAPI_CV_QR1_TEXT   "tsf-cv:one"
+#define TSAPI_CV_QR2_TEXT   "tsf-cv:two"
+
+/** The 13 digits of the EAN-13 symbol in barcode.png (12 + checksum). */
+#define TSAPI_CV_BARCODE_TEXT  "5901234123457"
+
+/**
+ * The known-good barcode control: OpenCV's own CI reference photos
+ * (opencv_extra testdata/cv/barcode/single), copied into the fixture dir
+ * by the generator and present only on an agent built with them (the
+ * suite's Docker image). Each decodes to the EAN-13 beside it under
+ * cv::barcode - OpenCV's regression tests assert exactly this. They are
+ * the control the barcode test checks the library against: if these
+ * decode but our synthetic one does not, the synthetic fixture is at
+ * fault, not OpenCV. Each entry is { filename, expected 13 digits }.
+ */
+#define TSAPI_CV_REF_BARCODES { \
+    { "bottle_1.jpg", "6922255451427" }, \
+    { "bottle_2.jpg", "6921168509256" }, \
+    { "book.jpg",     "9787115279460" } }
+
+/** The second red block in scene_multi.png (same size as the first). */
+#define TSAPI_CV_RED2_X     220
+#define TSAPI_CV_RED2_Y     150
+
+/* ---- the realistic screenshot (ui.png), 640x480 ---- */
+
+#define TSAPI_CV_UI_W       640  /**< Screenshot width. */
+#define TSAPI_CV_UI_H       480  /**< Screenshot height. */
+
+/** The OK button, also cropped out as ui_ok_tpl.png. */
+#define TSAPI_CV_UI_OK_X    40
+#define TSAPI_CV_UI_OK_Y    120
+#define TSAPI_CV_UI_OK_W    160
+#define TSAPI_CV_UI_OK_H    60
+
+/** The green status indicator. */
+#define TSAPI_CV_UI_GREEN_X 500
+#define TSAPI_CV_UI_GREEN_Y 64
+#define TSAPI_CV_UI_GREEN_W 100
+#define TSAPI_CV_UI_GREEN_H 40
+
+/** The large status string OCR reads, and the rectangle it sits in. */
+#define TSAPI_CV_UI_TEXT        "SYSTEM ONLINE"
+#define TSAPI_CV_UI_TEXT_X      20
+#define TSAPI_CV_UI_TEXT_Y      260
+#define TSAPI_CV_UI_TEXT_W      460
+#define TSAPI_CV_UI_TEXT_H      70
+
+/** The payload of the QR in the screenshot. */
+#define TSAPI_CV_UI_QR_TEXT     "ui:ready"
+
+/**
+ * Payloads encoded one per qr_rt_<i>.png, for the QR encode->decode
+ * round-trip invariant in the robustness test. Keep this list in step
+ * with the rtp list in cvgen.py: index i here is qr_rt_i.png there.
+ */
+#define TSAPI_CV_RT_PAYLOADS { \
+    "RT-0000", "hello world", "https://x.example/p?q=1", \
+    "0123456789", "mix_Aa-9" }
+
 /** What a test needs: an agent, an RPC server, and the fixture dir. */
 typedef struct tsapi_cv_session {
     /** Agent name. */

@@ -84,6 +84,34 @@ main(int argc, char **argv)
     if (!contains_ci(ocr_result.text, "2026"))
         TEST_VERDICT("OCR did not recover \"2026\" (got \"%s\")",
                      ocr_result.text != NULL ? ocr_result.text : "");
+    tapi_cv_text_free(&ocr_result);
+
+    TEST_STEP("Text is read from a rectangle of the scene, not the whole image");
+    {
+        te_string scene = TE_STRING_INIT;
+        /* The scene's caption sits along its bottom edge. */
+        tapi_cv_rect caption = { 20, 205, 280, 35 };
+
+        tsapi_cv_fixture(&sess, "scene.png", &scene);
+        rc = tapi_cv_ocr(sess.pco, scene.ptr, &caption, NULL, &ocr_result);
+        if (rc == 0)
+        {
+            tapi_cv_text_log(&ocr_result);
+            if (!contains_ci(ocr_result.text, "HELLO"))
+                TEST_VERDICT("Region OCR did not recover \"HELLO\" (got \"%s\")",
+                             ocr_result.text != NULL ? ocr_result.text : "");
+            tapi_cv_text_free(&ocr_result);
+        }
+        else
+        {
+            te_string_free(&scene);
+            CHECK_RC(rc);
+        }
+        te_string_free(&scene);
+    }
+
+    TEST_STEP("Recognise the whole text image again for the confidence chart");
+    CHECK_RC(tapi_cv_ocr(sess.pco, text_img.ptr, NULL, NULL, &ocr_result));
 
     TEST_STEP("Chart the per-word confidence");
     CHECK_RC(te_mi_logger_meas_create("tsf-cv", &logger));

@@ -88,6 +88,22 @@ main(int argc, char **argv)
     }
     if (diff.diff_path == NULL)
         TEST_VERDICT("A diff heatmap was requested but none was returned");
+    /* The heatmap is a real image on the agent, the size of the inputs. */
+    {
+        tapi_cv_image_info hinfo;
+
+        CHECK_RC(tapi_cv_info(sess.pco, diff.diff_path, &hinfo));
+        RING("diff heatmap %s: %dx%d, %s", diff.diff_path, hinfo.width,
+             hinfo.height, hinfo.format);
+        if (hinfo.width != TSAPI_CV_SCENE_W || hinfo.height != TSAPI_CV_SCENE_H)
+        {
+            tapi_cv_image_info_free(&hinfo);
+            TEST_VERDICT("The heatmap is %dx%d, expected the scene's %dx%d",
+                         hinfo.width, hinfo.height, TSAPI_CV_SCENE_W,
+                         TSAPI_CV_SCENE_H);
+        }
+        tapi_cv_image_info_free(&hinfo);
+    }
     tapi_cv_diff_free(&diff);
 
     TEST_STEP("Chart changed-pixel count against the tolerance");

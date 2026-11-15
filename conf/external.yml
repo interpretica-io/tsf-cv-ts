@@ -1,5 +1,13 @@
 repositories:
   - name: tsf_cv
+    # Published at https://github.com/interpretica-io/tsf-cv.git (private).
+    # The Builder clones with the git credentials of the environment it
+    # runs in (CI, lasirena). For a local `./scripts/run.sh docker` run on
+    # a host without credentials, point url at the checkout mounted beside
+    # the suite instead - the parent directory is mounted into the build
+    # container, so an absolute path such as
+    # /Users/<you>/src/midair-platform/tsf-cv resolves inside it - and
+    # leave ref as main. See README "Rebuilding here".
     url: https://github.com/interpretica-io/tsf-cv.git
     ref: main
     libs:

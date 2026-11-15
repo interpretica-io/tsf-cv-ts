@@ -73,6 +73,52 @@ main(int argc, char **argv)
     if (tapi_cv_find(sess.pco, scene.ptr, tpl_absent.ptr, 0.9, NULL))
         TEST_VERDICT("An absent template was reported as found");
 
+    TEST_STEP("The same template is found at both places it appears");
+    {
+        te_string multi_img = TE_STRING_INIT;
+        tapi_cv_match_opts opts = {0};
+        tapi_cv_matches matches;
+        const tapi_cv_match *m;
+        bool at_first = false;
+        bool at_second = false;
+
+        tsapi_cv_fixture(&sess, "scene_multi.png", &multi_img);
+        /*
+         * SQDIFF, not CCOEFF/CCORR: the template is a solid red block
+         * with zero intra-template variance, and the normalised
+         * correlation methods are degenerate on a zero-variance template
+         * (they divide by its standard deviation), scoring 1.0 across the
+         * flat white background and reporting matches in the corner
+         * rather than on the blocks. SQDIFF is difference-based and has
+         * no such singularity, so it is the right method for a uniform
+         * template.
+         */
+        opts.method = TAPI_CV_SQDIFF;
+        opts.threshold = 0.9;
+        opts.max_matches = 4;
+        CHECK_RC(tapi_cv_match_all(sess.pco, multi_img.ptr, tpl_red.ptr, &opts,
+                               &matches));
+        tapi_cv_matches_log(&matches);
+        TE_VEC_FOREACH(&matches.matches, m)
+        {
+            if (near(m->x, TSAPI_CV_RED_X - 2, TSAPI_CV_RED_X + 2) &&
+                near(m->y, TSAPI_CV_RED_Y - 2, TSAPI_CV_RED_Y + 2))
+                at_first = true;
+            if (near(m->x, TSAPI_CV_RED2_X - 2, TSAPI_CV_RED2_X + 2) &&
+                near(m->y, TSAPI_CV_RED2_Y - 2, TSAPI_CV_RED2_Y + 2))
+                at_second = true;
+        }
+        if (!at_first || !at_second)
+        {
+            TEST_VERDICT("The template was not found at both (%d,%d) and "
+                         "(%d,%d): %u match(es)", TSAPI_CV_RED_X, TSAPI_CV_RED_Y,
+                         TSAPI_CV_RED2_X, TSAPI_CV_RED2_Y,
+                         (unsigned)te_vec_size(&matches.matches));
+        }
+        tapi_cv_matches_free(&matches);
+        te_string_free(&multi_img);
+    }
+
     TEST_STEP("Chart the best red-template score per method family");
     CHECK_RC(te_mi_logger_meas_create("tsf-cv", &logger));
     for (i = 0; i < TE_ARRAY_LEN(families); i++)
