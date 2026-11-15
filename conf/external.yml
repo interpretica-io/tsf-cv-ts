@@ -1,0 +1,8 @@
+repositories:
+  - name: tsf_cv
+    url: https://github.com/interpretica-io/tsf-cv.git
+    ref: main
+    libs:
+      - ta_cv
+      - rpcs_cv
+      - tapi_cv

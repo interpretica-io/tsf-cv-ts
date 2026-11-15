@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<package version="1.0">
+    <description>Computer vision</description>
+    <author mailto="maxim.menshikov@interpretica.io" />
+    <session track_conf="silent">
+        <prologue><script name="prologue"><objective>Prepare the CV group.</objective></script></prologue>
+        <epilogue><script name="epilogue"><objective>Finalize the CV group.</objective></script></epilogue>
+        <run><script name="info"><objective>Image dimensions and encoding.</objective></script></run>
+        <run><script name="compare"><objective>Pixel diff: identical images and a boxed change.</objective></script></run>
+        <run><script name="match"><objective>Finding a template, and not finding an absent one.</objective></script></run>
+        <run><script name="region"><objective>Region colour: the green indicator.</objective></script></run>
+        <run><script name="ocr"><objective>Recognising rendered text (skips without tesseract).</objective></script></run>
+        <run><script name="decode"><objective>Decoding a known QR payload.</objective></script></run>
+    </session>
+</package>

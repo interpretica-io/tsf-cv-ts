@@ -1,0 +1,30 @@
+/** @mainpage
+
+This suite exercises tsf-cv - computer vision from the Test Agent it
+runs on - against OpenCV, on deterministic images the suite draws on the
+agent itself:
+
+- @ref cv-info - an image's dimensions, channels, depth and container;
+- @ref cv-compare - a pixel diff of two images: identical copies report
+  no change and SSIM 1, and a one-rectangle change is found and boxed;
+- @ref cv-match - finding a template cropped from the scene exactly
+  where it came from, and not finding a template that is not there;
+- @ref cv-region - the colour of a region: the green "indicator" is
+  green and the red block is not;
+- @ref cv-ocr - recognising a rendered string (skipped when the agent
+  has no tesseract);
+- @ref cv-decode - decoding a known QR payload (skipped when the agent's
+  OpenCV cannot encode the fixture).
+
+There is no key and no network: OpenCV is a library linked into the
+agent's RPC server and called in-process, so the image never leaves the
+agent. Each test generates its own fixtures with a cv2/numpy script run
+on the agent, so the scene - its geometry, colours, text and QR payload -
+is known exactly and asserted against. Numeric results (changed pixels
+over tolerance, match score by method, green share by region, OCR
+confidence) are emitted as MI measurement artifacts, so the HTML log and
+Bublik draw them as graphs. The point of the suite is that tsf-cv drives
+each OpenCV operation over the RPC and reads the result back as
+structured data.
+
+*/

@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<package version="1.0">
+    <description>tsf-cv demonstration suite</description>
+
+    <!-- @page cv-ts Computer Vision Suite
+          @objective Exercise tsf-cv against OpenCV on the agent the
+                     suite runs on, using deterministic synthetic images.
+
+          @par Test Groups:
+          - @ref cv-info - Image dimensions and encoding
+          - @ref cv-compare - Pixel diff: identical images and a boxed change
+          - @ref cv-match - Finding a template, and not finding an absent one
+          - @ref cv-region - Region colour: the green indicator
+          - @ref cv-ocr - Recognising rendered text (skips without tesseract)
+          - @ref cv-decode - Decoding a known QR payload
+
+          @par Notes:
+          - The analysis runs on the agent, in its RPC server, over
+            OpenCV's own C++ library API. No key and no network.
+          - Each test generates its own images on the agent with a
+            cv2/numpy script, so the scene is known exactly and nothing
+            is committed to the repository.
+          - OCR and barcode decoding are optional backends; a test skips
+            when the agent does not have the one it needs, rather than
+            failing.
+          - On the localhost configuration the agent is the build
+            container, which must carry libopencv. Name a host in
+            conf/rcf.conf and the same tests run against that host.
+    -->
+
+    <author mailto="maxim.menshikov@interpretica.io" />
+
+    <session track_conf="silent">
+        <!-- @page cv-ts-prologue Test Suite Prologue
+              @objective Prepare the test environment.
+
+              @par Scenario:
+              -# Nothing to do: each test opens its own session and makes
+                 its own fixtures.
+        -->
+        <prologue>
+            <script name="prologue">
+                <objective>
+                    Prepare the test environment.
+                    @md
+                </objective>
+            </script>
+        </prologue>
+
+        <!-- @page cv-ts-epilogue Test Suite Epilogue
+              @objective Finalize the test environment.
+        -->
+        <epilogue>
+            <script name="epilogue">
+                <objective>
+                    Finalize the test environment.
+                    @md
+                </objective>
+            </script>
+        </epilogue>
+
+        <run>
+            <package name="cv" />
+        </run>
+    </session>
+</package>

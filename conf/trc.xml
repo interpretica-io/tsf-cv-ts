@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<trc_db unknown_exp_status="passed_ok">
+  <test name="tsf-cv-ts" type="package">
+    <objective>Computer Vision Test Suite</objective>
+    <notes />
+    <iter result="PASSED">
+      <notes />
+      <test name="prologue" type="script">
+        <objective>Test suite prologue</objective>
+        <notes />
+        <iter result="PASSED"><notes /></iter>
+      </test>
+      <test name="cv" type="package">
+        <objective>Computer vision</objective>
+        <notes />
+        <iter result="PASSED">
+          <notes />
+          <test name="prologue" type="script">
+            <objective>CV group prologue</objective>
+            <notes />
+            <iter result="PASSED"><notes /></iter>
+          </test>
+          <test name="info" type="script">
+            <objective>Image dimensions and encoding</objective>
+            <notes />
+            <iter result="PASSED"><notes /></iter>
+          </test>
+          <test name="compare" type="script">
+            <objective>Pixel diff: identical images and a boxed change</objective>
+            <notes />
+            <iter result="PASSED"><notes /></iter>
+          </test>
+          <test name="match" type="script">
+            <objective>Finding a template, and not finding an absent one</objective>
+            <notes />
+            <iter result="PASSED"><notes /></iter>
+          </test>
+          <test name="region" type="script">
+            <objective>Region colour: the green indicator</objective>
+            <notes />
+            <iter result="PASSED"><notes /></iter>
+          </test>
+          <test name="ocr" type="script">
+            <objective>Recognising rendered text (skips without tesseract)</objective>
+            <notes />
+            <iter result="PASSED">
+              <notes>Skips when the agent has no libtesseract or language data.</notes>
+            </iter>
+          </test>
+          <test name="decode" type="script">
+            <objective>Decoding a known QR payload</objective>
+            <notes />
+            <iter result="SKIPPED">
+              <notes>QR decoding needs OpenCV built with QUIRC; the Debian
+                     bookworm libopencv used here is not, so the agent
+                     reports no QR backend and the test skips. On an
+                     OpenCV with QUIRC this iteration PASSES.</notes>
+            </iter>
+          </test>
+          <test name="epilogue" type="script">
+            <objective>CV group epilogue</objective>
+            <notes />
+            <iter result="PASSED"><notes /></iter>
+          </test>
+        </iter>
+      </test>
+      <test name="epilogue" type="script">
+        <objective>Test suite epilogue</objective>
+        <notes />
+        <iter result="PASSED"><notes /></iter>
+      </test>
+    </iter>
+  </test>
+</trc_db>
