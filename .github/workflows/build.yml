@@ -1,0 +1,99 @@
+name: build
+
+# Two levels of check.
+#
+# sanity (every push / PR, ~1 min): the suite is a Test Environment suite
+# built by dispatcher.sh cloning TE and the private tsf-cv module, so it
+# cannot be compiled in isolation. This job instead catches the breakage
+# that is cheap to catch without that tree: malformed package/TRC XML,
+# a test C file not wired into meson (or vice versa), and shell scripts
+# that do not parse.
+#
+# integration (manual, workflow_dispatch): the real end-to-end build and
+# run - it builds the Docker image (OpenCV from source with QUIRC and the
+# barcode module) and runs the suite on the localhost configuration. It
+# clones the private tsf-cv over HTTPS, so it needs a repo-read token in
+# the TSF_CV_TOKEN secret; without it the job is skipped, not failed.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libxml2-utils python3
+
+      - name: XML is well-formed (package.xml, trc.xml)
+        run: |
+          set -eux
+          find . -name '*.xml' -not -path './build/*' -not -path './meson-logs/*' \
+            -print0 | xargs -0 -r xmllint --noout
+
+      - name: Every cv test is wired into meson, and vice versa
+        run: |
+          python3 - <<'PY'
+          import re, glob, os, sys
+          mb = open('tsf-cv-ts/cv/meson.build').read()
+          m = re.search(r'tests\s*=\s*\[(.*?)\]', mb, re.S)
+          if not m:
+              sys.exit("could not find tests = [...] in cv/meson.build")
+          listed = set(re.findall(r"'([^']+)'", m.group(1)))
+          files = {os.path.basename(f)[:-2] for f in glob.glob('tsf-cv-ts/cv/*.c')}
+          missing = files - listed
+          extra = listed - files
+          if missing:
+              print("C files not listed in meson:", sorted(missing))
+          if extra:
+              print("listed in meson but no C file:", sorted(extra))
+          if missing or extra:
+              sys.exit(1)
+          print("meson wiring consistent:", sorted(listed))
+          PY
+
+      - name: Shell scripts parse
+        run: |
+          set -eu
+          find scripts -name '*.sh' -print0 | xargs -0 -n1 bash -n
+          echo "all shell scripts parse"
+
+  integration:
+    needs: sanity
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require the tsf-cv read token
+        env:
+          TSF_CV_TOKEN: ${{ secrets.TSF_CV_TOKEN }}
+        run: |
+          if [ -z "${TSF_CV_TOKEN:-}" ]; then
+            echo "TSF_CV_TOKEN secret is not set; skipping the integration build."
+            echo "Add a repo-read token as the TSF_CV_TOKEN secret to enable it."
+            exit 1
+          fi
+
+      - name: Authenticate git to the private module
+        env:
+          TSF_CV_TOKEN: ${{ secrets.TSF_CV_TOKEN }}
+        run: |
+          git config --global \
+            url."https://x-access-token:${TSF_CV_TOKEN}@github.com/".insteadOf \
+            "https://github.com/"
+
+      - name: Clone Test Environment beside the suite
+        run: |
+          git clone --depth 1 \
+            https://github.com/interpretica-io/test-environment ../test-environment
+
+      - name: Build the image and run the suite (Docker)
+        run: ./scripts/run.sh docker guess --cfg=localhost
