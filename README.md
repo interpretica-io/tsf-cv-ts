@@ -101,16 +101,16 @@ barcode control. The run is green against expectations
 ## Rebuilding here
 
 `conf/external.yml`'s `url` is the published github repository with
-`ref: main`, which the Builder clones with the credentials of the host it
-runs on (CI, lasirena). The Docker build container has **no** git
-credentials, so a local `./scripts/run.sh docker` run on a private module
-needs `url` pointed at the checkout mounted beside the suite instead — the
-run mounts the parent directory, so an absolute path such as
-`/Users/<you>/src/midair-platform/tsf-cv` resolves inside the container.
-A run rewrites `conf/builder.conf.lock` pinning the resolved commit; reset
-it to header-only (`grep '^#' conf/builder.conf.lock > x && mv x
-conf/builder.conf.lock`) and clear `/tmp/aibuild /tmp/te_ws_*` to pick up
-a new module commit.
+`ref: main`. `tsf-cv` is public, so the Builder clones it over HTTPS with
+no credentials — including inside the Docker build container — so a local
+`./scripts/run.sh docker guess --cfg=localhost` works as is. To build an
+unpushed local change instead, point `url` at the checkout mounted beside
+the suite (the run mounts the parent directory, so an absolute path such
+as `/Users/<you>/src/midair-platform/tsf-cv` resolves inside the
+container). A run rewrites `conf/builder.conf.lock` pinning the resolved
+commit; reset it to header-only (`grep '^#' conf/builder.conf.lock > x &&
+mv x conf/builder.conf.lock`) and clear `/tmp/aibuild /tmp/te_ws_*` to
+pick up a new module commit.
 
 ## Continuous integration
 
@@ -123,6 +123,5 @@ a new module commit.
   `cv/meson.build` and vice versa, and the shell scripts parse.
 - **integration** (manual, `workflow_dispatch`): the real end-to-end build
   and run — it builds the Docker image (OpenCV from source) and runs the
-  suite on `localhost`. It clones the private `tsf-cv` over HTTPS, so it
-  needs a repo-read token in the `TSF_CV_TOKEN` secret; without it the job
-  fails fast with that message rather than running.
+  suite on `localhost`. It is manual rather than on push because the image
+  build takes ~20 minutes; `tsf-cv` is public, so it needs no credentials.

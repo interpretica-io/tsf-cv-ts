@@ -12,8 +12,9 @@ name: build
 # integration (manual, workflow_dispatch): the real end-to-end build and
 # run - it builds the Docker image (OpenCV from source with QUIRC and the
 # barcode module) and runs the suite on the localhost configuration. It
-# clones the private tsf-cv over HTTPS, so it needs a repo-read token in
-# the TSF_CV_TOKEN secret; without it the job is skipped, not failed.
+# clones the public tsf-cv module over HTTPS, so it needs no credentials.
+# It is manual, not on push, because the image build (OpenCV from source)
+# takes ~20 minutes.
 
 on:
   push:
@@ -71,24 +72,6 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
-
-      - name: Require the tsf-cv read token
-        env:
-          TSF_CV_TOKEN: ${{ secrets.TSF_CV_TOKEN }}
-        run: |
-          if [ -z "${TSF_CV_TOKEN:-}" ]; then
-            echo "TSF_CV_TOKEN secret is not set; skipping the integration build."
-            echo "Add a repo-read token as the TSF_CV_TOKEN secret to enable it."
-            exit 1
-          fi
-
-      - name: Authenticate git to the private module
-        env:
-          TSF_CV_TOKEN: ${{ secrets.TSF_CV_TOKEN }}
-        run: |
-          git config --global \
-            url."https://x-access-token:${TSF_CV_TOKEN}@github.com/".insteadOf \
-            "https://github.com/"
 
       - name: Clone Test Environment beside the suite
         run: |
