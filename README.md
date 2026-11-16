@@ -4,26 +4,17 @@
 
 A Test Environment suite that exercises
 [tsf-cv](https://github.com/interpretica-io/tsf-cv) (`tapi_cv`) against
-the agent it runs on: computer vision over OpenCV, with no key and no
-network (OpenCV is a library linked into the agent's RPC server). Every
+the agent it runs on, doing computer vision over OpenCV with no key and
+no network (OpenCV is a library linked into the agent's RPC server). Every
 test draws its own deterministic images on the agent and asserts tsf-cv
-reads them back correctly.
-
-| Test | What it checks |
-|---|---|
-| `info` | the synthetic scene is exactly 320×240, 3-channel, 8-bit PNG |
-| `compare` | two copies of the scene are identical (zero changed pixels, SSIM 1); the diff variant's one extra rectangle is found and boxed where it was drawn |
-| `match` | the red block, cropped out as a template, is found at the pixel it was cropped from; a noise template that is not in the scene is not found |
-| `region` | the green "indicator" rectangle is ~100% inside a green HSV range and the red block is ~0%, with a red-dominant mean colour |
-| `ocr` | the rendered string `HELLO CV 2026` is recovered by OCR (skipped when the agent has no tesseract) |
-| `decode` | a QR encoding `tsf-cv:ok` is decoded back (skipped when the agent's OpenCV cannot encode the fixture) |
+reads them back correctly. The Tests section below lists every test.
 
 OCR and barcode decoding are **optional backends**; a test skips
 (`tapi_cv_supports()`) when the agent does not have the one it needs,
 rather than failing. There is no mock and no network: OpenCV runs in the
-agent's RPC server, called through its own C++ library API, so every
-image is analysed locally and deterministically. Numeric results are
-emitted as MI measurement artifacts, so the HTML log and Bublik draw
+agent's RPC server, called through its own C++ library API, so it
+analyses every image locally and deterministically. Each test emits its
+numeric results as MI measurement artifacts, so the HTML log and Bublik draw
 them as graphs (changed pixels over tolerance, match score by method
 family, green share by region, OCR confidence per word).
 
@@ -53,8 +44,8 @@ English language pack enables the OCR test, and `python3-opencv` /
 `conf/rcf.conf` and the same tests run against it.
 
 `conf/external.yml` names the tsf-cv repository and the ref to follow;
-`conf/builder.conf.lock` pins the commit actually built (empty until the
-first build, since tsf-cv is not published yet). The Builder clones
+`conf/builder.conf.lock` pins the commit it built (empty until the first
+build). The Builder clones
 tsf-cv itself, so the checkout beside this suite is not what a run
 compiles.
 
@@ -90,9 +81,10 @@ barcode control. The run is green against expectations
 
 - **`barcode`** asserts against OpenCV's own reference EAN-13 photos
   (`opencv_extra` `testdata/cv/barcode/single`), which decode to known
-  values; a synthetic `python-barcode` symbol is decoded alongside as a
-  non-fatal diagnostic, since crisp vector bars on flat white are not what
-  `cv::barcode`'s localisation is tuned for.
+  values; it also decodes a synthetic `python-barcode` symbol as a
+  non-fatal diagnostic, because `cv::barcode`'s detector localises
+  photographed bars, not the crisp vector bars on flat white that
+  `python-barcode` draws.
 - **`match`** uses `TM_SQDIFF` for a solid-colour template: the normalised
   methods (`TM_CCOEFF_NORMED` / `TM_CCORR_NORMED`) divide by the template's
   standard deviation, which is zero for a uniform template, so they are not
@@ -116,12 +108,12 @@ pick up a new module commit.
 
 `.github/workflows/build.yml` has two levels:
 
-- **sanity** (every push and PR): a TE suite is built by `dispatcher.sh`
-  cloning the framework and the `tsf-cv` module, so it cannot be compiled
-  in isolation; this job instead checks what is cheap without that tree:
-  the package/TRC XML is well-formed, every `cv/*.c` test is wired into
-  `cv/meson.build` and vice versa, and the shell scripts parse.
+- **sanity** (every push and PR): `dispatcher.sh` builds a TE suite by
+  cloning the framework and the `tsf-cv` module, so this job cannot
+  compile the suite in isolation; it instead checks what is cheap without
+  that tree: the package and TRC XML parse, `cv/meson.build` lists every
+  `cv/*.c` test and vice versa, and the shell scripts parse.
 - **integration** (manual, `workflow_dispatch`): the real end-to-end build
-  and run: it builds the Docker image (OpenCV from source) and runs the
+  and run. It builds the Docker image (OpenCV from source) and runs the
   suite on `localhost`. It is manual rather than on push because the image
   build takes ~20 minutes; `tsf-cv` is public, so it needs no credentials.
