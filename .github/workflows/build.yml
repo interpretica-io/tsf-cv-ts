@@ -3,7 +3,7 @@ name: build
 # Two levels of check.
 #
 # sanity (every push / PR, ~1 min): the suite is a Test Environment suite
-# built by dispatcher.sh cloning TE and the private tsf-cv module, so it
+# built by dispatcher.sh cloning TE and the tsf-cv module, so it
 # cannot be compiled in isolation. This job instead catches the breakage
 # that is cheap to catch without that tree: malformed package/TRC XML,
 # a test C file not wired into meson (or vice versa), and shell scripts
