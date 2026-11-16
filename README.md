@@ -4,7 +4,7 @@
 
 A Test Environment suite that exercises
 [tsf-cv](https://github.com/interpretica-io/tsf-cv) (`tapi_cv`) against
-the agent it runs on — computer vision over OpenCV, with no key and no
+the agent it runs on: computer vision over OpenCV, with no key and no
 network (OpenCV is a library linked into the agent's RPC server). Every
 test draws its own deterministic images on the agent and asserts tsf-cv
 reads them back correctly.
@@ -31,8 +31,8 @@ family, green share by region, OCR confidence per word).
 
 The images are not committed. Each test writes a small cv2/numpy
 generator onto the agent and runs it (the same idea as tsf-ai-ts's mock
-provider), so the scene — its geometry, colours, text and QR payload —
-is known exactly, and the generator's drawing is kept in step with the
+provider), so the scene (its geometry, colours, text and QR payload) is
+known exactly, and the generator's drawing is kept in step with the
 `TSAPI_CV_*` macros the tests assert against. A host whose python3 has
 no `cv2` skips the suite cleanly.
 
@@ -80,7 +80,7 @@ compiles.
 QUIRC** and the barcode module (the suite's Dockerfile builds it; Debian's
 stock libopencv lacks QUIRC and is too old for the barcode module), plus
 libtesseract. **All fourteen iterations pass live** against the real
-libraries — including QR decoding (one and two symbols), OCR whole and by
+libraries, including QR decoding (one and two symbols), OCR whole and by
 region, format/depth sniffing, the diff heatmap, a multi-location template
 match, the realistic end-to-end screenshot, the robustness group, and the
 barcode control. The run is green against expectations
@@ -102,7 +102,7 @@ barcode control. The run is green against expectations
 
 `conf/external.yml`'s `url` is the published github repository with
 `ref: main`. `tsf-cv` is public, so the Builder clones it over HTTPS with
-no credentials — including inside the Docker build container — so a local
+no credentials (including inside the Docker build container), so a local
 `./scripts/run.sh docker guess --cfg=localhost` works as is. To build an
 unpushed local change instead, point `url` at the checkout mounted beside
 the suite (the run mounts the parent directory, so an absolute path such
@@ -118,10 +118,10 @@ pick up a new module commit.
 
 - **sanity** (every push and PR): a TE suite is built by `dispatcher.sh`
   cloning the framework and the `tsf-cv` module, so it cannot be compiled
-  in isolation; this job instead checks what is cheap without that tree —
+  in isolation; this job instead checks what is cheap without that tree:
   the package/TRC XML is well-formed, every `cv/*.c` test is wired into
   `cv/meson.build` and vice versa, and the shell scripts parse.
 - **integration** (manual, `workflow_dispatch`): the real end-to-end build
-  and run — it builds the Docker image (OpenCV from source) and runs the
+  and run: it builds the Docker image (OpenCV from source) and runs the
   suite on `localhost`. It is manual rather than on push because the image
   build takes ~20 minutes; `tsf-cv` is public, so it needs no credentials.
